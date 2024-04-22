@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script
+      src="https://cdn.liche.io/js/liche-sdk-0.0.1.js"
+      type="application/javascript"
+    ></script>
+    <title>Product Page</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <h1></h1>
+    <p>꿈꾸던 그 모든 것, Mac과 함께 현실로.</p>
+    <img src="macbook.png" alt="Amazing Product" />
+    <form id="installmentForm">
+      <div id="paymentBar"></div>
+      <button type="button" onclick="onClickPayment()">BNPL로 구매하기</button>
+    </form>
+    <script>
+      const productPrices = [
+        { installmentPlan: 12, installmentAmount: 100000 },
+        { installmentPlan: 24, installmentAmount: 50000 },
+        { installmentPlan: 36, installmentAmount: 33333 },
+        { installmentPlan: 48, installmentAmount: 25000 },
+        { installmentPlan: 60, installmentAmount: 20000 },
+      ];
+      const paymentBar = document.getElementById("paymentBar");
+
+      productPrices.forEach((plan, index) => {
+        const label = document.createElement("label");
+        const radioInput = document.createElement("input");
+        radioInput.type = "radio";
+        radioInput.name = "installment-plan";
+        radioInput.value = plan.installmentPlan;
+
+        if (index === 0) {
+          radioInput.checked = true;
+        }
+
+        label.appendChild(radioInput);
+        label.append(
+          `${plan.installmentPlan}개월 (${plan.installmentAmount}원)`
+        );
+
+        paymentBar.appendChild(label);
+      });
+
+      LicheSDK.init();
+
+      function onClickPayment() {
+        const selectedPlan = document.querySelector(
+          'input[name="installment-plan"]:checked'
+        ).value;
+
+        const installmentPlan = Number(selectedPlan);
+        const installmentAmount = productPrices.find(
+          (plan) => plan.installmentPlan === installmentPlan
+        ).installmentAmount;
+
+        LicheSDK.requestBNPL({
+          clientKey: "{your_client_key}",
+          sellerCode: "{your_seller_code}",
+          callbackUrl: "http://localhost:9999/callback.html",
+          product: {
+            name: "테스트 상품",
+            quantity: 1,
+            goodsCode: "M323060020000",
+            brandName: "Awesomebrand",
+          },
+          partner: {
+            orderKey: Date.now().toString(),
+            customerKey: Date.now().toString(),
+          },
+          installmentPlan,
+          installmentAmount,
+        });
+      }
+    </script>
+  </body>
+</html>
